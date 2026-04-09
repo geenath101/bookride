@@ -83,4 +83,4 @@ docker_build(
 k8s_yaml('./infra/development/k8s/web-deployment.yaml')
 k8s_resource('web', port_forwards=3000, labels="frontend")
 
-### End of Web Frontend ###
+### End of Web Frontend ###k8s_resource
