@@ -2,7 +2,7 @@ package grpc
 
 import (
 	"context"
-	"ride-sharing/services/trip-service/internal/service"
+	"ride-sharing/services/trip-service/internal/core"
 	pb "ride-sharing/shared/proto/trip"
 
 	"google.golang.org/grpc"
@@ -10,10 +10,10 @@ import (
 
 type gRPCHandler struct {
 	pb.UnimplementedTripServiceServer
-	service *service.TripService
+	service core.TripService
 }
 
-func NewGRPCHandler(server *grpc.Server, service *service.TripService) *gRPCHandler {
+func NewGRPCHandler(server *grpc.Server, service core.TripService) *gRPCHandler {
 	handler := &gRPCHandler{
 		service: service,
 	}

@@ -7,9 +7,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"ride-sharing/services/trip-service/internal/infrastructure/grpc"
+	"ride-sharing/services/trip-service/internal/api/grpc"
+	httpApi "ride-sharing/services/trip-service/internal/api/http"
+	"ride-sharing/services/trip-service/internal/core"
 	"ride-sharing/services/trip-service/internal/infrastructure/repository"
-	"ride-sharing/services/trip-service/internal/service"
 	"syscall"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 var GrpcPort = ":9093"
 var httpPort = ":8083"
 
-func startGRPCServer(ctx *context.Context, svc *service.TripService) {
+func startGRPCServer(ctx *context.Context, svc core.TripService) {
 	log.Println("Starting the grpc server")
 	lis, err := net.Listen("tcp", GrpcPort)
 	if err != nil {
@@ -42,10 +43,11 @@ func startGRPCServer(ctx *context.Context, svc *service.TripService) {
 	grpcServer.GracefulStop()
 }
 
-func statHTTPserver(ctx *context.Context, svc *service.TripService) {
+func statHTTPserver(ctx *context.Context) {
 	log.Println("Starting the http server")
 	mux := http.NewServeMux()
 
+	mux.HandleFunc("GET /trip/preview", httpApi.HandleTripPreview)
 	server := &http.Server{
 		Addr:    httpPort,
 		Handler: mux,
@@ -56,7 +58,6 @@ func statHTTPserver(ctx *context.Context, svc *service.TripService) {
 		if err := server.ListenAndServe(); err != nil {
 			log.Printf("Http server failed  %v", err)
 		}
-
 	}()
 
 	// waiting for the shutdown signal
@@ -73,7 +74,7 @@ func statHTTPserver(ctx *context.Context, svc *service.TripService) {
 func main() {
 
 	inmemRepo := repository.NewInmemRepository()
-	svc := service.NewService(inmemRepo)
+	svc := core.NewService(inmemRepo)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -83,7 +84,7 @@ func main() {
 	signal.Notify(shutdownSignal, os.Interrupt, syscall.SIGTERM)
 
 	go startGRPCServer(&ctx, svc)
-	go statHTTPserver(&ctx, svc)
+	go statHTTPserver(&ctx)
 
 	<-shutdownSignal
 	log.Printf("grpc and http servers forcefully shutting down")

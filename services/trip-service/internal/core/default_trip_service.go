@@ -1,4 +1,4 @@
-package service
+package core
 
 import (
 	"context"
@@ -6,32 +6,31 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"ride-sharing/services/trip-service/internal/domain"
 	"ride-sharing/shared/types"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type TripService struct {
-	repo domain.TripRepository
+type DefaultTripService struct {
+	repo TripRepository
 }
 
-func NewService(repo domain.TripRepository) *TripService {
-	return &TripService{
+func NewService(repo TripRepository) *DefaultTripService {
+	return &DefaultTripService{
 		repo: repo,
 	}
 }
 
-func (s *TripService) CreateTrip(ctx context.Context, fare *domain.RideFareModel) (*domain.TripModel, error) {
-	t := &domain.TripModel{
+func (t DefaultTripService) CreateTrip(ctx *context.Context, fare *RideFareModel) (*TripModel, error) {
+	m := &TripModel{
 		ID:       primitive.NewObjectID(),
 		Status:   "InProgress",
 		RideFare: fare,
 	}
-	return s.repo.CreateTrip(ctx, t)
+	return t.repo.CreateTrip(ctx, m)
 }
 
-func (s *TripService) GetRoute(ctx context.Context, pickup, destination *types.Coordinate) (*types.OsrmApiResponse, error) {
+func (s DefaultTripService) GetRoute(ctx *context.Context, pickup, destination types.Coordinate) (*types.Route, error) {
 	url := fmt.Sprintf("http://router.project-osrm.org/route/v1/driving/%f,%f;%f,%f?overview=full&geometrices=geojson",
 		pickup.Longitude, pickup.Latitude, destination.Longitude, destination.Latitude)
 
