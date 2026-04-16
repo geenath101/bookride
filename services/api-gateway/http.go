@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
+	"ride-sharing/services/api-gateway/grpc_clients"
 	"ride-sharing/shared/contracts"
 )
 
@@ -19,6 +21,12 @@ func handleTripPreview(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "user id must be present", http.StatusBadRequest)
 		return
 	}
+
+	tripSerice, err := grpc_clients.NewTripServiceClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer tripSerice.Close()
 
 	response := contracts.APIResponse{Data: "Ok"}
 	writeJSON(w, http.StatusAccepted, response)
