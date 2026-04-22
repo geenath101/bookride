@@ -12,7 +12,7 @@ type HttpHandler struct {
 	Service core.TripService
 }
 
-type previewTripRequest struct {
+type PreviewTripRequest struct {
 	UserID      string           `json:"userID"`
 	PickUp      types.Coordinate `json:"pickup"`
 	Destination types.Coordinate `json:"destination"`
